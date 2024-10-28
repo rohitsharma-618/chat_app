@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Chat App Login</title>
+</head>
+<body>
+    <div id="app-container">
+        <div id="login-container">
+            <h2>Chat Application</h2>
+            <input type="text" id="username" placeholder="Username" required />
+            <input type="password" id="password" placeholder="Password" required />
+            <button id="login">Login</button>
+            <div id="error" style="color:red;"></div>
+        </div>
+
+        <div id="chat-container" style="display:none;">
+            <div id="chat-box"></div>
+            <input type="text" id="message" placeholder="Type your message here..." />
+            <button id="send">Send</button>
+        </div>
+    </div>
+
+    <script>
+        const socket = new WebSocket("ws://localhost:5000");
+
+        socket.onopen = function() {
+            console.log("Connected to server");
+        };
+
+        socket.onmessage = function(event) {
+            const message = event.data;
+            if (message === "Authentication successful!") {
+                document.getElementById("login-container").style.display = "none";
+                document.getElementById("chat-container").style.display = "block";
+            } else {
+                document.getElementById("error").innerText = message;
+            }
+        };
+
+        socket.onclose = function() {
+            console.log("Disconnected from server");
+        };
+
+        document.getElementById("login").onclick = function() {
+            const username = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+            socket.send(`${username}\n${password}`);
+        };
+
+        document.getElementById("send").onclick = function() {
+            const message = document.getElementById("message").value;
+            socket.send(message);
+            document.getElementById("message").value = "";
+        };
+    </script>
+</body>
+</html>
